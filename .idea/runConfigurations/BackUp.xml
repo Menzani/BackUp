@@ -1,0 +1,8 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="BackUp" type="Application" factoryName="Application" nameIsGenerated="true">
+    <option name="MAIN_CLASS_NAME" value="it.menzani.backup.BackUp" />
+    <module name="BackUp" />
+    <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$/runtime" />
+    <method />
+  </configuration>
+</component>

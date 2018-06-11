@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="JAVA_MODULE" version="4">
+  <component name="NewModuleRootManager" inherit-compiler-output="true">
+    <exclude-output />
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" packagePrefix="it.menzani.backup" />
+      <sourceFolder url="file://$MODULE_DIR$/res" type="java-resource" relativeOutputPath="it.menzani.backup" />
+      <excludeFolder url="file://$MODULE_DIR$/runtime" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="Apache Commons Compress" level="project" />
+    <orderEntry type="library" name="JSch" level="project" />
+    <orderEntry type="library" name="Jackson" level="project" />
+    <orderEntry type="library" name="SnakeYAML" level="project" />
+  </component>
+</module>

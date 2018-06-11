@@ -1,0 +1,18 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="BackUp">
+    <output-path>$PROJECT_DIR$/out/artifacts/BackUp</output-path>
+    <root id="archive" name="BackUp.jar">
+      <element id="directory" name="META-INF">
+        <element id="file-copy" path="$PROJECT_DIR$/build/META-INF/MANIFEST.MF" />
+      </element>
+      <element id="module-output" name="BackUp" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/Apache Commons Compress/commons-compress-1.17.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/JSch/jsch-0.1.54.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/Jackson/jackson-core-2.9.5.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/Jackson/jackson-databind-2.9.5.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/Jackson/jackson-annotations-2.9.5.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/Jackson/jackson-dataformat-yaml-2.9.5.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/SnakeYAML/snakeyaml-1.19.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>

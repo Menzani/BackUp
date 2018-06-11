@@ -1,0 +1,11 @@
+backup:
+  serverFolder: '../spigot'
+  localBackupFolder: 'backup'
+upload:
+  host:
+    name: "localhost"
+    user: "minecraft"
+    privateKeyFile: ''
+  knownHostsFile: '~/.ssh/known_hosts'
+  remoteBackupFolder: '/home/minecraft/backups/' # Must end with a file separator character.
+timeZone: "Europe/Rome"

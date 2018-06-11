@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="SnakeYAML">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/lib/SnakeYAML" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/lib/SnakeYAML" />
+    </SOURCES>
+    <jarDirectory url="file://$PROJECT_DIR$/lib/SnakeYAML" recursive="false" />
+    <jarDirectory url="file://$PROJECT_DIR$/lib/SnakeYAML" recursive="false" type="SOURCES" />
+  </library>
+</component>
