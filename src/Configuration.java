@@ -5,6 +5,7 @@ class Configuration {
     private Upload upload;
     private String timeZone;
     private boolean deleteCache;
+    private int deleteOldBackups;
 
     Backup getBackup() {
         return backup;
@@ -20,6 +21,10 @@ class Configuration {
 
     boolean getDeleteCache() {
         return deleteCache;
+    }
+
+    int getDeleteOldBackups() {
+        return deleteOldBackups;
     }
 
     static class Backup {

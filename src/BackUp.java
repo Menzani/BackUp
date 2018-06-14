@@ -6,10 +6,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
-import com.jcraft.jsch.ChannelSftp;
-import com.jcraft.jsch.JSch;
-import com.jcraft.jsch.Session;
-import com.jcraft.jsch.SftpProgressMonitor;
+import com.jcraft.jsch.*;
 import it.menzani.backup.compress.TarGzFile;
 import org.apache.commons.compress.utils.IOUtils;
 
@@ -21,8 +18,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.time.format.FormatStyle;
 
 public class BackUp implements SftpProgressMonitor {
     public static void main(String[] args) throws Exception {
@@ -37,11 +32,10 @@ public class BackUp implements SftpProgressMonitor {
         Configuration.Host host = configuration.getUpload().getHost();
 
         LocalDate now = LocalDate.now(timeZone);
-        String name = now.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG));
-        String fileName = name + ".tar.gz";
-        Path backup = localBackupFolder.resolve(fileName);
+        BackupName backupName = new BackupName(now);
+        Path backup = localBackupFolder.resolve(backupName.getFileName());
 
-        System.out.println("Creazione backup del " + name);
+        System.out.println("Creazione backup del " + backupName);
         try (TarGzFile archive = new TarGzFile(backup)) {
             archive.bundleFile(serverFolder.resolve("banned-ips.json"));
             archive.bundleFile(serverFolder.resolve("banned-players.json"));
@@ -64,7 +58,22 @@ public class BackUp implements SftpProgressMonitor {
         ChannelSftp channel = (ChannelSftp) session.openChannel("sftp");
         channel.connect();
         long backupSize = Files.size(backup);
-        channel.put(Files.newInputStream(backup), configuration.getUpload().getRemoteBackupFolder() + fileName, new BackUp(backupSize));
+        String remoteBackupFolder = configuration.getUpload().getRemoteBackupFolder();
+        channel.put(Files.newInputStream(backup), remoteBackupFolder + backupName.getFileName(), new BackUp(backupSize));
+
+        int deleteOldBackups = configuration.getDeleteOldBackups();
+        if (deleteOldBackups > 0) {
+            BackupName oldBackupName = new BackupName(now.minusDays(deleteOldBackups));
+            System.out.println("Eliminazione backup del " + oldBackupName);
+            try {
+                channel.rm(remoteBackupFolder + oldBackupName.getFileName());
+            } catch (SftpException e) {
+                if (e.id != 2) throw e;
+            }
+            if (!configuration.getDeleteCache()) {
+                Files.deleteIfExists(localBackupFolder.resolve(oldBackupName.getFileName()));
+            }
+        }
         channel.disconnect();
         session.disconnect();
 

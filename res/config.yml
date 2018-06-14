@@ -10,3 +10,4 @@ upload:
   remoteBackupFolder: '/home/minecraft/backups/' # Must end with a file separator character.
 timeZone: "Europe/Rome"
 deleteCache: true
+deleteOldBackups: 30 # Days
