@@ -4,6 +4,7 @@ class Configuration {
     private Backup backup;
     private Upload upload;
     private String timeZone;
+    private boolean deleteCache;
 
     Backup getBackup() {
         return backup;
@@ -15,6 +16,10 @@ class Configuration {
 
     String getTimeZone() {
         return timeZone;
+    }
+
+    boolean getDeleteCache() {
+        return deleteCache;
     }
 
     static class Backup {

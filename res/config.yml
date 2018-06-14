@@ -9,3 +9,4 @@ upload:
   knownHostsFile: '~/.ssh/known_hosts'
   remoteBackupFolder: '/home/minecraft/backups/' # Must end with a file separator character.
 timeZone: "Europe/Rome"
+deleteCache: true

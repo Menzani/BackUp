@@ -68,8 +68,10 @@ public class BackUp implements SftpProgressMonitor {
         channel.disconnect();
         session.disconnect();
 
-        System.out.println("Eliminazione cache");
-        Files.delete(backup);
+        if (configuration.getDeleteCache()) {
+            System.out.println("Eliminazione cache");
+            Files.delete(backup);
+        }
     }
 
     private static Configuration loadConfiguration() throws IOException {
