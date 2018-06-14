@@ -55,27 +55,33 @@ public class BackUp implements SftpProgressMonitor {
         ssh.setKnownHosts(configuration.getUpload().getKnownHostsFile());
         Session session = ssh.getSession(host.getUser(), host.getName());
         session.connect();
-        ChannelSftp channel = (ChannelSftp) session.openChannel("sftp");
-        channel.connect();
-        long backupSize = Files.size(backup);
-        String remoteBackupFolder = configuration.getUpload().getRemoteBackupFolder();
-        channel.put(Files.newInputStream(backup), remoteBackupFolder + backupName.getFileName(), new BackUp(backupSize));
-
-        int deleteOldBackups = configuration.getDeleteOldBackups();
-        if (deleteOldBackups > 0) {
-            BackupName oldBackupName = new BackupName(now.minusDays(deleteOldBackups));
-            System.out.println("Eliminazione backup del " + oldBackupName);
+        try {
+            ChannelSftp channel = (ChannelSftp) session.openChannel("sftp");
+            channel.connect();
             try {
-                channel.rm(remoteBackupFolder + oldBackupName.getFileName());
-            } catch (SftpException e) {
-                if (e.id != 2) throw e;
+                long backupSize = Files.size(backup);
+                String remoteBackupFolder = configuration.getUpload().getRemoteBackupFolder();
+                channel.put(Files.newInputStream(backup), remoteBackupFolder + backupName.getFileName(), new BackUp(backupSize));
+
+                int deleteOldBackups = configuration.getDeleteOldBackups();
+                if (deleteOldBackups > 0) {
+                    BackupName oldBackupName = new BackupName(now.minusDays(deleteOldBackups));
+                    System.out.println("Eliminazione backup del " + oldBackupName);
+                    try {
+                        channel.rm(remoteBackupFolder + oldBackupName.getFileName());
+                    } catch (SftpException e) {
+                        if (e.id != 2) throw e;
+                    }
+                    if (!configuration.getDeleteCache()) {
+                        Files.deleteIfExists(localBackupFolder.resolve(oldBackupName.getFileName()));
+                    }
+                }
+            } finally {
+                channel.disconnect();
             }
-            if (!configuration.getDeleteCache()) {
-                Files.deleteIfExists(localBackupFolder.resolve(oldBackupName.getFileName()));
-            }
+        } finally {
+            session.disconnect();
         }
-        channel.disconnect();
-        session.disconnect();
 
         if (configuration.getDeleteCache()) {
             System.out.println("Eliminazione cache");
