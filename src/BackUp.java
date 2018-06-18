@@ -29,13 +29,22 @@ public class BackUp implements SftpProgressMonitor {
         ZoneId timeZone = ZoneId.of(configuration.getTimeZone());
         Path localBackupFolder = Paths.get(configuration.getBackup().getLocalBackupFolder());
         Path serverFolder = Paths.get(configuration.getBackup().getServerFolder());
-        Configuration.Host host = configuration.getUpload().getHost();
+        Configuration.Upload upload = configuration.getUpload();
+        Configuration.Host host = null;
+        if (upload != null) {
+            host = upload.getHost();
+        }
 
         LocalDate now = LocalDate.now(timeZone);
         BackupName backupName = new BackupName(now);
-        Path backup = localBackupFolder.resolve(backupName.getFileName());
+        BackupName oldBackupName = null;
+        int deleteOldBackups = configuration.getDeleteOldBackups();
+        if (deleteOldBackups > 0) {
+            oldBackupName = new BackupName(now.minusDays(deleteOldBackups));
+        }
 
         System.out.println("Creazione backup del " + backupName);
+        Path backup = localBackupFolder.resolve(backupName.getFileName());
         try (TarGzFile archive = new TarGzFile(backup)) {
             archive.bundleFile(serverFolder.resolve("banned-ips.json"));
             archive.bundleFile(serverFolder.resolve("banned-players.json"));
@@ -49,43 +58,45 @@ public class BackUp implements SftpProgressMonitor {
             archive.bundleDirectory(serverFolder.resolve("world_the_end"));
         }
 
-        System.out.println("Connessione a " + host.getName());
-        JSch ssh = new JSch();
-        ssh.addIdentity(host.getPrivateKeyFile());
-        ssh.setKnownHosts(configuration.getUpload().getKnownHostsFile());
-        Session session = ssh.getSession(host.getUser(), host.getName());
-        session.connect();
-        try {
-            ChannelSftp channel = (ChannelSftp) session.openChannel("sftp");
-            channel.connect();
+        if (upload != null) {
+            System.out.println("Connessione a " + host.getName());
+            JSch ssh = new JSch();
+            ssh.addIdentity(host.getPrivateKeyFile());
+            ssh.setKnownHosts(upload.getKnownHostsFile());
+            Session session = ssh.getSession(host.getUser(), host.getName());
+            session.connect();
             try {
-                long backupSize = Files.size(backup);
-                String remoteBackupFolder = configuration.getUpload().getRemoteBackupFolder();
-                channel.put(Files.newInputStream(backup), remoteBackupFolder + backupName.getFileName(), new BackUp(backupSize));
+                ChannelSftp channel = (ChannelSftp) session.openChannel("sftp");
+                channel.connect();
+                try {
+                    long backupSize = Files.size(backup);
+                    String remoteBackupFolder = upload.getRemoteBackupFolder();
+                    channel.put(Files.newInputStream(backup), remoteBackupFolder + backupName.getFileName(), new BackUp(backupSize));
 
-                int deleteOldBackups = configuration.getDeleteOldBackups();
-                if (deleteOldBackups > 0) {
-                    BackupName oldBackupName = new BackupName(now.minusDays(deleteOldBackups));
-                    System.out.println("Eliminazione backup del " + oldBackupName);
-                    try {
-                        channel.rm(remoteBackupFolder + oldBackupName.getFileName());
-                    } catch (SftpException e) {
-                        if (e.id != 2) throw e;
+                    if (oldBackupName != null) {
+                        logBackupDeletion(oldBackupName);
+                        try {
+                            channel.rm(remoteBackupFolder + oldBackupName.getFileName());
+                        } catch (SftpException e) {
+                            if (e.id != 2) throw e;
+                        }
                     }
-                    if (!configuration.getDeleteCache()) {
-                        Files.deleteIfExists(localBackupFolder.resolve(oldBackupName.getFileName()));
-                    }
+                } finally {
+                    channel.disconnect();
                 }
             } finally {
-                channel.disconnect();
+                session.disconnect();
             }
-        } finally {
-            session.disconnect();
         }
 
-        if (configuration.getDeleteCache()) {
+        if (upload != null && configuration.getDeleteCache()) {
             System.out.println("Eliminazione cache");
             Files.delete(backup);
+        } else if (oldBackupName != null) {
+            if (upload == null) {
+                logBackupDeletion(oldBackupName);
+            }
+            Files.deleteIfExists(localBackupFolder.resolve(oldBackupName.getFileName()));
         }
     }
 
@@ -106,6 +117,10 @@ public class BackUp implements SftpProgressMonitor {
         mapper.setVisibility(PropertyAccessor.GETTER, JsonAutoDetect.Visibility.NON_PRIVATE);
         mapper.setVisibility(PropertyAccessor.IS_GETTER, JsonAutoDetect.Visibility.NON_PRIVATE);
         return mapper.readValue(Files.newBufferedReader(config), Configuration.class);
+    }
+
+    private static void logBackupDeletion(BackupName backupName) {
+        System.out.println("Eliminazione backup del " + backupName);
     }
 
     private final long total;
