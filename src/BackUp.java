@@ -136,11 +136,12 @@ public class BackUp implements SftpProgressMonitor {
         System.out.println("Upload di " + destination + " (" + formatByteAmount(total) + ')');
     }
 
+    // https://stackoverflow.com/a/3758880/3453226
     private static String formatByteAmount(long amount) {
-        final int unit = 1000;
+        final int unit = 1024;
         if (amount < unit) return amount + " B";
         int exp = (int) (Math.log(amount) / Math.log(unit));
-        char pre = "kMGTPE".charAt(exp - 1);
+        char pre = "KMGTPE".charAt(exp - 1);
         return String.format("%.1f %sB", amount / Math.pow(unit, exp), pre);
     }
 
